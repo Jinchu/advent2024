@@ -7,10 +7,10 @@ import (
 	"os"
 )
 
-type inputs [7]string
+type inputs []string
 
 // is this a comment
-func get_input(filep string) *inputs {
+func get_input(filep string) inputs {
 	f, err := os.Open(filep)
 	if err != nil {
 		log.Fatal(err)
@@ -21,20 +21,21 @@ func get_input(filep string) *inputs {
 
 	scanner := bufio.NewScanner(f)
 	var input_lines inputs
-	i := 0
 	for scanner.Scan() {
-		input_lines[i] = scanner.Text()
-		i++
+		input_lines = append(input_lines, scanner.Text())
 	}
 
-	return &input_lines
+	return input_lines
 }
 
 func main() {
 	fmt.Println("Hello, World!")
 	i_lines := get_input("test-input-2.txt")
 	fmt.Printf("i_lines type %T\n", i_lines)
-	for i := 0; i < 7; i++ {
-		fmt.Println(i_lines[i])
+	// 	fmt.Println(i_lines)
+
+	for i, v := range i_lines {
+
+		fmt.Printf("line %v:         %v\n", i, v)
 	}
 }
