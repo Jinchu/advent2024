@@ -30,11 +30,11 @@ func get_input(filep string) inputs {
 
 func main() {
 	fmt.Println("Hello, World!")
-	i_lines := get_input("test-input-2.txt")
-	fmt.Printf("i_lines type %T\n", i_lines)
+	input_lines := get_input("test-input-2.txt")
+	fmt.Printf("i_lines type %T\n", input_lines)
 	// 	fmt.Println(i_lines)
 
-	for i, v := range i_lines {
+	for i, v := range input_lines {
 
 		fmt.Printf("line %v:         %v\n", i, v)
 	}
