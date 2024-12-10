@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 )
 
-type inputs []string
-type inputs_arr [8]string
-
 // is this a comment
-func get_input(input_lines inputs, filep string) inputs {
+func getInput(filep string) []string {
 	f, err := os.Open(filep)
 	if err != nil {
 		log.Fatal(err)
@@ -19,52 +18,71 @@ func get_input(input_lines inputs, filep string) inputs {
 
 	// defer so that we close the file always
 	defer f.Close()
+	var inputLines []string
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		input_lines = append(input_lines, scanner.Text())
+		inputLines = append(inputLines, scanner.Text())
 	}
 
-	return input_lines
+	return inputLines
 }
 
-func get_input_to_array(inputs_arr *inputs_arr, filep string) {
-	f, err := os.Open(filep)
-	if err != nil {
-		log.Fatal(err)
+func parseTwoLists(inputList []string) ([]int, []int) {
+	var leftInput []int
+	var rightInput []int
+
+	debug := false
+
+	for _, v := range inputList {
+		c := strings.Split(v, " ")
+		if debug {
+			fmt.Printf("c[0]: %v\n", c[0])
+			fmt.Printf("c[3]: %v\n", c[3])
+		}
+
+		left, err := strconv.Atoi(c[0])
+		if err != nil {
+			fmt.Printf("Cannot convert %v to integer", c[0])
+			panic(err)
+		}
+		right, err := strconv.Atoi(c[3])
+		if err != nil {
+			fmt.Printf("Cannot convert c[3] %v to integer\n", c[3])
+			panic(err)
+		}
+
+		leftInput = append(leftInput, left)
+		rightInput = append(rightInput, right)
 	}
 
-	// defer so that we close the file always
-	defer f.Close()
+	return leftInput, rightInput
+}
 
-	scanner := bufio.NewScanner(f)
-	i := 0
-	for scanner.Scan() {
-
-		inputs_arr[i] = scanner.Text()
-		i++
+func printRawInput(inputSlice []string) {
+	for i, v := range inputSlice {
+		fmt.Printf("line %v:         %v\n", i, v)
 	}
-
-	return
 }
 
 func main() {
-	fmt.Println("Hello, World!")
-	var input_lines inputs
-	var input_array inputs_arr
-	input_lines = get_input(input_lines, "test-input-2.txt")
-	fmt.Printf("i_lines type %T\n", input_lines)
-	// 	fmt.Println(i_lines)
+	test := false
 
-	get_input_to_array(&input_array, "test-input-2.txt")
+	fmt.Println("Running")
+	if test {
+		testArrays()
+		fmt.Println("-----")
+	}
+	inputLines := getInput("test-input-2.txt")
+	fmt.Printf("i_lines type %T\n", inputLines)
 
-	for i, v := range input_lines {
+	leftInput, rightInput := parseTwoLists(inputLines)
 
+	for i, v := range leftInput {
 		fmt.Printf("line %v:         %v\n", i, v)
 	}
 
-	fmt.Println("----")
-	for _, v := range input_array {
-		fmt.Printf("line: %v\n", v)
+	for _, v := range rightInput {
+		fmt.Printf("value: %v\n", v)
 	}
 }
