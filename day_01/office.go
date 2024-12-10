@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -69,22 +70,16 @@ func printRawInput(inputSlice []string) {
 
 func main() {
 	test := false
-
 	fmt.Println("Running")
 	if test {
 		testArrays()
 		fmt.Println("-----")
 	}
-	inputLines := getInput("test-input-2.txt")
-	fmt.Printf("i_lines type %T\n", inputLines)
+	inputLines := getInput("test-input-1.txt")
 
 	leftInput, rightInput := parseTwoLists(inputLines)
 
-	for i, v := range leftInput {
-		fmt.Printf("line %v:         %v\n", i, v)
-	}
+	sort.Slice(leftInput, func(i, j int) bool { return leftInput[i] < leftInput[j] })
+	sort.Slice(rightInput, func(i, j int) bool { return rightInput[i] < rightInput[j] })
 
-	for _, v := range rightInput {
-		fmt.Printf("value: %v\n", v)
-	}
 }
