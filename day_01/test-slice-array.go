@@ -52,7 +52,7 @@ func getInputToArray(inputs_arr *inputs_arr, filep string) {
 func testArrays() {
 	fmt.Println("Hello, World!")
 	var inputArray inputs_arr
-	input_lines := getInputTT("test-input-2.txt")
+	input_lines := getInputTT("input-day1.txt")
 	fmt.Printf("i_lines type %T\n", input_lines)
 	// 	fmt.Println(i_lines)
 
