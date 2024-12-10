@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// is this a comment
+// getInput reads the input file and returns a slice containing the rows of the file.
 func getInput(filep string) []string {
 	f, err := os.Open(filep)
 	if err != nil {
@@ -28,6 +28,7 @@ func getInput(filep string) []string {
 	return inputLines
 }
 
+// parseTwoLists returns two slices containing the two lists in the input
 func parseTwoLists(inputList []string) ([]int, []int) {
 	var leftInput []int
 	var rightInput []int
@@ -59,6 +60,7 @@ func parseTwoLists(inputList []string) ([]int, []int) {
 	return leftInput, rightInput
 }
 
+// printRawInput just prints every line of the input slice
 func printRawInput(inputSlice []string) {
 	for i, v := range inputSlice {
 		fmt.Printf("line %v:         %v\n", i, v)
