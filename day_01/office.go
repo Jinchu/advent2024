@@ -3,22 +3,29 @@ package main
 import (
 	"fmt"
 	"office/internal/input"
-	"sort"
 )
 
-func calculateDistance(leftSlice []int, rightSlice []int) uint {
-	var cumulativeDistance uint = 0
+// countMatches counts the number of times the selector is present in the targetSlice
+func countMatches(selector int, targetSlice []int) int {
+	matchCount := 0
 
-	for i, v := range leftSlice {
-		currentDistance := v - rightSlice[i]
-		if currentDistance < 0 {
-			currentDistance = 0 - currentDistance
+	for _, v := range targetSlice {
+		if selector == v {
+			matchCount++
 		}
-		cumulativeDistance = cumulativeDistance + uint(currentDistance)
-		// fmt.Printf("Current: %v  Total: %v\n", currentDistance, cumulativeDistance)
 	}
+	return matchCount
+}
 
-	return cumulativeDistance
+func calculateSimilarity(leftInput []int, rightSlice []int) int {
+	cumulativeSimilarityFactor := 0
+
+	for _, leftV := range leftInput {
+		matches := countMatches(leftV, rightSlice)
+		cumulativeSimilarityFactor = cumulativeSimilarityFactor + (matches * leftV)
+
+	}
+	return cumulativeSimilarityFactor
 }
 
 func main() {
@@ -31,10 +38,7 @@ func main() {
 	}
 	inputLines := input.GetInput("input-day1.txt")
 
-	leftInput, rightInput := input.ParseTwoLists(inputLines, debug)
-
-	sort.Slice(leftInput, func(i, j int) bool { return leftInput[i] < leftInput[j] })
-	sort.Slice(rightInput, func(i, j int) bool { return rightInput[i] < rightInput[j] })
+	leftInput, rightInput := input.ParseTwoLists(inputLines, false)
 
 	if debug {
 		for i, v := range leftInput {
@@ -42,6 +46,6 @@ func main() {
 		}
 	}
 
-	totalDistance := calculateDistance(leftInput, rightInput)
+	totalDistance := calculateSimilarity(leftInput, rightInput)
 	fmt.Println(totalDistance)
 }
