@@ -52,6 +52,7 @@ func safeDistance(report []uint) bool {
 	return true
 }
 
+// isSafe checks the given report WITHOUT the Problem Dampener
 func isSafe(report []uint) bool {
 	isSafe := true
 
@@ -71,6 +72,25 @@ func isSafe(report []uint) bool {
 	return isSafe
 }
 
+func remove(slice []uint, s int) []uint {
+	return append(slice[:s], slice[s+1:]...)
+}
+
+// / isSafeWithDampener removes one level at the time and checks if the dampened report is safe
+func isSafeWithDampener(report []uint) bool {
+	original_report := make([]uint, len(report))
+	copy(original_report, report)
+
+	for i := range report {
+		dampened := remove(report, i)
+		if isSafe(dampened) {
+			return true
+		}
+		copy(report, original_report)
+	}
+	return false
+}
+
 func CountSafeReports() {
 	debug := false
 	var safeCount uint = 0
@@ -80,6 +100,8 @@ func CountSafeReports() {
 		currentRep := input.ParseIntFromStrint(rep, debug)
 
 		if isSafe(currentRep) {
+			safeCount++
+		} else if isSafeWithDampener(currentRep) {
 			safeCount++
 		}
 	}
