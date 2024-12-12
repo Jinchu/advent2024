@@ -54,22 +54,16 @@ func safeDistance(report []uint) bool {
 
 // isSafe checks the given report WITHOUT the Problem Dampener
 func isSafe(report []uint) bool {
-	isSafe := true
 
-	if isIncreasing(report) || isDecreasing(report) {
-		isSafe = true
-	} else {
-		isSafe = false
-		return isSafe
+	if !isIncreasing(report) && !isDecreasing(report) {
+		return false
 	}
 
-	if safeDistance(report) {
-		isSafe = true
-	} else {
-		isSafe = false
+	if !safeDistance(report) {
+		return false
 	}
 
-	return isSafe
+	return true
 }
 
 func remove(slice []uint, s int) []uint {
@@ -95,7 +89,9 @@ func CountSafeReports() {
 	debug := false
 	var safeCount uint = 0
 
-	inputLines := input.GetInput("./day_02/input-day2.txt")
+	inputLines := input.GetInputV2("./day_02/input-day2.txt")
+	// inputLines := input.GetInput("./day_02/test-input-1.txt")
+
 	for _, rep := range inputLines {
 		currentRep := input.ParseIntFromStrint(rep, debug)
 

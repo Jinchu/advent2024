@@ -3,7 +3,6 @@ package input
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -11,10 +10,7 @@ import (
 
 // GetInput reads the input file and returns a slice containing the rows of the file.
 func GetInput(filep string) []string {
-	f, err := os.Open(filep)
-	if err != nil {
-		log.Fatal(err)
-	}
+	f, _ := os.Open(filep)
 
 	// defer so that we close the file always
 	defer f.Close()
@@ -26,6 +22,15 @@ func GetInput(filep string) []string {
 	}
 
 	return inputLines
+}
+
+// GetInput reads the input file and returns a slice containing the rows of the file.
+func GetInputV2(fileName string) []string {
+	bytesRead, _ := os.ReadFile(fileName)
+	fileContent := strings.TrimSpace(string(bytesRead))
+	lines := strings.Split(fileContent, "\n")
+
+	return lines
 }
 
 // ParsesIntFromString parses list of unsigned integers from a given string
