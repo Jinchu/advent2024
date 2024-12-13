@@ -42,14 +42,12 @@ func computeCommand(command string) int {
 	return left * right
 }
 
-/*
-...
-7 * 32
-*/
 func RecoverMemory() {
 	inputLines := input.GetInputV2("./day_03/input-day3.txt")
 	// inputLines := input.GetInputV2("./day_03/test-input-2.txt")
 	total := 0
+
+	// Note the solution for the part two is in brand day3-pt2
 	for _, mFragment := range inputLines {
 		commands := parseCommands(mFragment)
 		for _, c := range commands {
