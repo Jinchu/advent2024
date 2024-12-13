@@ -3,6 +3,8 @@ package day_04
 import (
 	"advent/internal/input"
 	"fmt"
+	"slices"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -82,18 +84,41 @@ func printMatrix(outLines []string) {
 	}
 }
 
+func reverseString(orig string) string {
+	runes := []rune(orig)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
+}
+
+func countMatches(direction []string, total int) int {
+	searchWord := "XMAS"
+	for _, line := range direction {
+		total = total + strings.Count(line, searchWord)
+		reversed := reverseString(line)
+		total = total + strings.Count(reversed, searchWord)
+	}
+
+	return total
+}
+
 func SearchForChristmas() {
 	total := 0
 
-	inputLines := input.GetInputV2("./day_04/test-input-1.txt")
-	verticalLines := getVerticalLines(inputLines)
+	// inputLines := input.GetInputV2("./day_04/test-input-1.txt")
+	inputLines := input.GetInputV2("./day_04/input-day4.txt")
+	reverseInput := slices.Clone(inputLines)
+	slices.Reverse(reverseInput)
 
-	printMatrix(inputLines)
-	fmt.Println("")
+	verticalLines := getVerticalLines(inputLines)
 	diagonalLines := getDiagonalLines(inputLines)
-	printMatrix(diagonalLines)
-	secondDiag := getDiagonalLines(verticalLines)
-	printMatrix(secondDiag)
+	secondDiag := getDiagonalLines(reverseInput)
+
+	total = countMatches(inputLines, total)
+	total = countMatches(verticalLines, total)
+	total = countMatches(diagonalLines, total)
+	total = countMatches(secondDiag, total)
 
 	fmt.Println("\n---")
 	fmt.Printf("Found the word %v times\n", total)
