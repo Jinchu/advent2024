@@ -6,15 +6,15 @@ import (
 	"unicode/utf8"
 )
 
-func getVerticalLines(horisontal []string) []string {
+func getVerticalLines(horizontal []string) []string {
 
 	var verticalLines []string
-	lineLeght := utf8.RuneCountInString(horisontal[0])
+	lineLenght := utf8.RuneCountInString(horizontal[0])
 
-	for i := 0; i < lineLeght; i++ {
+	for i := 0; i < lineLenght; i++ {
 
 		currentVertical := ""
-		for _, currentHorisontal := range horisontal {
+		for _, currentHorisontal := range horizontal {
 			currentChar := string([]rune(currentHorisontal)[i])
 			currentVertical = currentVertical + currentChar
 		}
@@ -22,6 +22,58 @@ func getVerticalLines(horisontal []string) []string {
 	}
 
 	return verticalLines
+}
+
+func getDiagonalLines(horizontal []string) []string {
+	var diagonalLines []string
+
+	lineLenght := utf8.RuneCountInString(horizontal[0])
+	colunmLenght := len(horizontal)
+	var maxLen int
+	if lineLenght > colunmLenght {
+		maxLen = lineLenght
+	} else {
+		maxLen = colunmLenght
+	}
+
+	for i := 0; i < maxLen; i++ {
+		x := i
+		y := 0
+
+		currentDiagonal := ""
+
+		for j := y; j <= i; j++ {
+			checkLine := horizontal[x]
+			currentChar := string([]rune(checkLine)[y])
+			currentDiagonal = currentDiagonal + currentChar
+			x--
+			y++
+		}
+
+		diagonalLines = append(diagonalLines, currentDiagonal)
+
+	}
+
+	diagonalLines = diagonalLines[:len(diagonalLines)-1]
+
+	for i := 0; i <= maxLen; i++ {
+		x := lineLenght - 1
+		y := i
+
+		currentDiagonal := ""
+
+		for j := y; j < colunmLenght; j++ {
+			checkLine := horizontal[x]
+			currentChar := string([]rune(checkLine)[y])
+			currentDiagonal = currentDiagonal + currentChar
+			x--
+			y++
+		}
+
+		diagonalLines = append(diagonalLines, currentDiagonal)
+	}
+
+	return diagonalLines
 }
 
 func printMatrix(outLines []string) {
@@ -38,7 +90,10 @@ func SearchForChristmas() {
 
 	printMatrix(inputLines)
 	fmt.Println("")
-	printMatrix(verticalLines)
+	diagonalLines := getDiagonalLines(inputLines)
+	printMatrix(diagonalLines)
+	secondDiag := getDiagonalLines(verticalLines)
+	printMatrix(secondDiag)
 
 	fmt.Println("\n---")
 	fmt.Printf("Found the word %v times\n", total)
