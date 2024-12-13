@@ -23,6 +23,19 @@ func parseCommands(memoryFragment string) []string {
 	return commands
 }
 
+func parseConditonalStatements(memoryFragment string) []string {
+	var conditionals []string
+
+	dirtyConditional := strings.Split(memoryFragment, "do()")
+	for _, dirty := range dirtyConditional {
+		var cleaned string
+		cleaned = strings.Split(dirty, "don't()")[0]
+		conditionals = append(conditionals, cleaned)
+	}
+
+	return conditionals
+}
+
 // computeCommand() calculates the multiplication in the command.
 func computeCommand(command string) int {
 	debug := false
@@ -50,13 +63,18 @@ func RecoverMemory() {
 	inputLines := input.GetInputV2("./day_03/input-day3.txt")
 	// inputLines := input.GetInputV2("./day_03/test-input-2.txt")
 	total := 0
+	singleLine := ""
 	for _, mFragment := range inputLines {
-		commands := parseCommands(mFragment)
+		lineContent := strings.TrimSpace(string(mFragment))
+		singleLine = singleLine + lineContent
+	}
+	cleanedFragments := parseConditonalStatements(singleLine)
+	for _, fragment := range cleanedFragments {
+		commands := parseCommands(fragment)
 		for _, c := range commands {
 			singleResult := computeCommand(c)
 			total = total + singleResult
 		}
-		fmt.Printf("one line.. total: %v\n", total)
 	}
 
 	fmt.Printf("Result: %v\n\n", total)
