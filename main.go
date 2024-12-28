@@ -8,7 +8,7 @@ import (
 func main() {
 	fmt.Println("Running")
 
-	//	day_02.CountSafeReports()
-	day_04.SearchForChristmas()
+	// day_04.SearchForChristmas()
+	day_04.SearchForX()
 
 }

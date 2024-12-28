@@ -9,7 +9,6 @@ import (
 )
 
 func getVerticalLines(horizontal []string) []string {
-
 	var verticalLines []string
 	lineLenght := utf8.RuneCountInString(horizontal[0])
 
@@ -103,11 +102,69 @@ func countMatches(direction []string, total int) int {
 	return total
 }
 
+func checkAdjacent(grid []string, x int, y int) bool {
+	checkLine := grid[y-1]
+	upperLeft := string([]rune(checkLine)[x-1])
+	upperRight := string([]rune(checkLine)[x+1])
+
+	checkLine = grid[y+1]
+	lowerLeft := string([]rune(checkLine)[x-1])
+	lowerRight := string([]rune(checkLine)[x+1])
+
+	if upperLeft == string('M') && lowerRight == string('S') {
+		if upperRight == string('M') && lowerLeft == string('S') {
+			return true
+		} else if upperRight == string('S') && lowerLeft == string('M') {
+			return true
+		}
+	} else if upperLeft == string('S') && lowerRight == string('M') {
+		if upperRight == string('M') && lowerLeft == string('S') {
+			return true
+		} else if upperRight == string('S') && lowerLeft == string('M') {
+			return true
+		}
+	}
+
+	return false
+}
+
+func gridTravelCount(inputLines []string) uint {
+	var totalFound uint
+	firstLine := inputLines[0]
+
+	totalFound = 0
+	for y := 1; y < len(inputLines)-1; y++ {
+		for x := 1; x < len(firstLine)-1; x++ {
+			currentLine := inputLines[y]
+			currentChar := string([]rune(currentLine)[x])
+			if currentChar == string('A') {
+
+				if checkAdjacent(inputLines, x, y) {
+					totalFound++
+				}
+			}
+		}
+	}
+
+	return totalFound
+}
+
+// part 2
+func SearchForX() {
+	// inputLines := input.GetInputV2("./day_04/test-input-1.txt")
+	inputLines := input.GetInputV2("./day_04/input-day4.txt")
+
+	matchesFound := gridTravelCount(inputLines)
+
+	fmt.Printf("Found %v matches\n\n", matchesFound)
+}
+
+// part 1
 func SearchForChristmas() {
 	total := 0
 
-	// inputLines := input.GetInputV2("./day_04/test-input-1.txt")
-	inputLines := input.GetInputV2("./day_04/input-day4.txt")
+	inputLines := input.GetInputV2("./day_04/test-input-1.txt")
+	// inputLines := input.GetInputV2("./day_04/input-day4.txt")
 	reverseInput := slices.Clone(inputLines)
 	slices.Reverse(reverseInput)
 
