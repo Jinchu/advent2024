@@ -14,16 +14,18 @@ type rule struct {
 
 func PrintOrder() {
 	total := 0
-	debug := false
+	debug := true
 
-	// rules, pageNumbers := getRulesAndPages("./day_05/test-input-1.txt")
-	rules, pageNumbers := getRulesAndPages("./day_05/input-day5.txt")
+	rules, pageNumbers := getRulesAndPages("./day_05/test-input-1.txt")
+	// rules, pageNumbers := getRulesAndPages("./day_05/input-day5.txt")
 
 	for _, update := range pageNumbers {
 		isValid := checkUpdate(update, rules)
-		if isValid {
+
+		// Solution to part one can be found in branch day5-pt1
+		if !isValid {
 			if debug {
-				fmt.Printf("Valid update found %v\n", update)
+				fmt.Printf("Invalid update found %v\n", update)
 			}
 			total = total + getMiddleValue(update, debug)
 		}
@@ -47,6 +49,7 @@ func getMiddleValue(update []int, debug bool) int {
 	return update[middle]
 }
 
+// checkUpdate return true if the update does not break any rules
 func checkUpdate(wholeUpdate []int, ruleBook []rule) bool {
 	for _, currentRule := range ruleBook {
 		for i := range wholeUpdate {
@@ -90,7 +93,7 @@ func checkRight(wholeUpdate []int, currentRule rule, checkIndex int) bool {
 		checkNumber = wholeUpdate[i]
 
 		if checkNumber == currentRule.before {
-			// fmt.Printf("Right check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
+			fmt.Printf("Right check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
 			return false
 		}
 	}
