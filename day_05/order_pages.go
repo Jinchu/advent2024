@@ -13,27 +13,38 @@ type rule struct {
 }
 
 func PrintOrder() {
+	total := 0
 	debug := false
-	// inputLines := input.GetInputV2("./day_05/test-input-1.txt")
-	//	inputLines := input.GetInputV2("./day_05/input-day5.txt")
 
-	rules, pageNumbers := getRulesAndPages("./day_05/test-input-1.txt")
-
-	if debug {
-		for _, update := range pageNumbers {
-			fmt.Println(update[2])
-			if rules[2].before == 97 {
-				fmt.Println("dummy")
-			}
-		}
-	}
+	// rules, pageNumbers := getRulesAndPages("./day_05/test-input-1.txt")
+	rules, pageNumbers := getRulesAndPages("./day_05/input-day5.txt")
 
 	for _, update := range pageNumbers {
 		isValid := checkUpdate(update, rules)
 		if isValid {
-			fmt.Printf("Valid update found %v\n", update)
+			if debug {
+				fmt.Printf("Valid update found %v\n", update)
+			}
+			total = total + getMiddleValue(update, debug)
 		}
 	}
+
+	fmt.Printf("The sum of middle numbers from updates is: %v\n\n", total)
+}
+
+func getMiddleValue(update []int, debug bool) int {
+	if len(update)%2 == 0 {
+		fmt.Printf("the length is an even number %v", len(update))
+		return 0
+	}
+
+	middle := (len(update) - 1) / 2
+
+	if debug {
+		fmt.Printf("the middle value is %v\n\n", update[middle])
+	}
+
+	return update[middle]
 }
 
 func checkUpdate(wholeUpdate []int, ruleBook []rule) bool {
@@ -60,8 +71,7 @@ func checkLeft(wholeUpdate []int, currentRule rule, checkIndex int) bool {
 		checkNumber = wholeUpdate[i]
 
 		if checkNumber == currentRule.after {
-			fmt.Printf("Left check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
-			fmt.Printf("Current page number [%v] %v\n\n", checkIndex, checkNumber)
+			// fmt.Printf("Left check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
 			return false
 		}
 	}
@@ -80,7 +90,7 @@ func checkRight(wholeUpdate []int, currentRule rule, checkIndex int) bool {
 		checkNumber = wholeUpdate[i]
 
 		if checkNumber == currentRule.before {
-			fmt.Printf("Right check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
+			// fmt.Printf("Right check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
 			return false
 		}
 	}
