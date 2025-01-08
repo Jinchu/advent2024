@@ -12,12 +12,26 @@ type rule struct {
 	after  int
 }
 
+func mockPages() [][]int {
+	var theMock [][]int
+
+	first := []int{93, 36, 64, 57, 94, 66, 13, 32, 37, 78, 73, 19, 25, 84, 17, 31, 87, 47, 42, 59, 81, 91, 95}
+	second := []int{21, 25, 67, 34, 75, 29, 52}
+
+	theMock = append(theMock, first)
+	theMock = append(theMock, second)
+
+	return theMock
+}
+
 func PrintOrder() {
 	total := 0
 	debug := false
 
 	// rules, pageNumbers := getRulesAndPages("./day_05/test-input-1.txt")
 	rules, pageNumbers := getRulesAndPages("./day_05/input-day5.txt")
+
+	pageNumbers = mockPages()
 
 	for _, update := range pageNumbers {
 		isValid := checkUpdate(update, rules)
@@ -32,17 +46,18 @@ func PrintOrder() {
 				fmt.Printf("Invalid update found %v\n", update)
 			}
 			fixedOrder := fixPrintOrder(update, rules)
-			total = total + getMiddleValue(fixedOrder, debug)
+			total = total + getMiddleValue(fixedOrder, debug, update)
 		}
 	}
 
 	fmt.Printf("The sum of middle numbers from updates is: %v\n\n", total)
 }
 
-func getMiddleValue(update []int, debug bool) int {
+func getMiddleValue(update []int, debug bool, orginalPages []int) int {
 	if len(update)%2 == 0 {
 		fmt.Printf("ERROR: the length is an even number %v\n", len(update))
 		fmt.Printf("%v\n", update)
+		fmt.Printf("The original was: %v\n\n", orginalPages)
 		return 0
 	}
 
