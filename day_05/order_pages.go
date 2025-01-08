@@ -14,20 +14,25 @@ type rule struct {
 
 func PrintOrder() {
 	total := 0
-	debug := true
+	debug := false
 
-	rules, pageNumbers := getRulesAndPages("./day_05/test-input-1.txt")
-	// rules, pageNumbers := getRulesAndPages("./day_05/input-day5.txt")
+	// rules, pageNumbers := getRulesAndPages("./day_05/test-input-1.txt")
+	rules, pageNumbers := getRulesAndPages("./day_05/input-day5.txt")
 
 	for _, update := range pageNumbers {
 		isValid := checkUpdate(update, rules)
+
+		if debug {
+			fmt.Println("---")
+		}
 
 		// Solution to part one can be found in branch day5-pt1
 		if !isValid {
 			if debug {
 				fmt.Printf("Invalid update found %v\n", update)
 			}
-			total = total + getMiddleValue(update, debug)
+			fixedOrder := fixPrintOrder(update, rules)
+			total = total + getMiddleValue(fixedOrder, debug)
 		}
 	}
 
@@ -36,7 +41,8 @@ func PrintOrder() {
 
 func getMiddleValue(update []int, debug bool) int {
 	if len(update)%2 == 0 {
-		fmt.Printf("the length is an even number %v", len(update))
+		fmt.Printf("ERROR: the length is an even number %v\n", len(update))
+		fmt.Printf("%v\n", update)
 		return 0
 	}
 
@@ -83,6 +89,89 @@ func checkLeft(wholeUpdate []int, currentRule rule, checkIndex int) bool {
 
 }
 
+func oneFixStep(update []int, ruleBook []rule) []int {
+	var fixedUpdate []int
+	for _, currentRule := range ruleBook {
+		for i := range update {
+			breakingIndex := checkRightWithIndex(update, currentRule, i)
+			if breakingIndex < 0 {
+				continue
+			}
+			fixedUpdate = conformToRule(update, i, breakingIndex)
+		}
+	}
+
+	return fixedUpdate
+}
+
+func fixPrintOrder(wholeUpdate []int, ruleBook []rule) []int {
+	circuitBreaker := 12
+	fixedUpdate := oneFixStep(wholeUpdate, ruleBook)
+
+	for !checkUpdate(fixedUpdate, ruleBook) {
+		if circuitBreaker <= 0 {
+			break
+		}
+		fixedUpdate = oneFixStep(fixedUpdate, ruleBook)
+		circuitBreaker--
+	}
+
+	return fixedUpdate
+}
+
+func conformToRule(wholeUpdate []int, checkIndex int, breakingIndex int) []int {
+	debug := false
+	var fixedUpdate []int
+	if breakingIndex < 0 {
+		panic("Nothing to return")
+	} else {
+		if debug {
+			fmt.Printf("The violating character is %v [position %v]\n",
+				wholeUpdate[breakingIndex], breakingIndex)
+			fmt.Printf("The violating character should be before %v [position %v]\n",
+				wholeUpdate[checkIndex], checkIndex)
+		}
+
+		for i := range wholeUpdate {
+			if i < checkIndex {
+				fixedUpdate = append(fixedUpdate, wholeUpdate[i])
+			} else if i > breakingIndex {
+				fixedUpdate = append(fixedUpdate, wholeUpdate[i])
+			} else if i == checkIndex {
+				fixedUpdate = append(fixedUpdate, wholeUpdate[breakingIndex])
+			} else if i == checkIndex+1 {
+				fixedUpdate = append(fixedUpdate, wholeUpdate[checkIndex])
+			}
+		}
+
+	}
+
+	if debug {
+		fmt.Printf("Fixed order: %v\n\n", fixedUpdate)
+	}
+	return fixedUpdate
+}
+
+// checkRight checks from left to right if the current rule is violated. Returns -1
+// if a rule is not violated otherwise the index of the error
+func checkRightWithIndex(wholeUpdate []int, currentRule rule, checkIndex int) int {
+	if currentRule.after != wholeUpdate[checkIndex] {
+		return -1 // rule is not applicable
+	}
+
+	for i := checkIndex + 1; i < len(wholeUpdate); i++ {
+		var checkNumber int
+		checkNumber = wholeUpdate[i]
+
+		if checkNumber == currentRule.before {
+			// fmt.Printf("Right check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
+			return i
+		}
+	}
+
+	return -1 // no rule braking numbers found
+}
+
 func checkRight(wholeUpdate []int, currentRule rule, checkIndex int) bool {
 	if currentRule.after != wholeUpdate[checkIndex] {
 		return true // rule is not applicable
@@ -93,7 +182,7 @@ func checkRight(wholeUpdate []int, currentRule rule, checkIndex int) bool {
 		checkNumber = wholeUpdate[i]
 
 		if checkNumber == currentRule.before {
-			fmt.Printf("Right check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
+			// fmt.Printf("Right check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
 			return false
 		}
 	}
