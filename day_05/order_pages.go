@@ -15,8 +15,8 @@ type rule struct {
 func mockPages() [][]int {
 	var theMock [][]int
 
-	first := []int{93, 36, 64, 57, 94, 66, 13, 32, 37, 78, 73, 19, 25, 84, 17, 31, 87, 47, 42, 59, 81, 91, 95}
-	second := []int{21, 25, 67, 34, 75, 29, 52}
+	second := []int{13, 81, 77, 75, 68, 76, 92, 37, 84, 67, 63}
+	first := []int{19, 37, 67, 63, 66, 81, 25, 32, 31}
 
 	theMock = append(theMock, first)
 	theMock = append(theMock, second)
@@ -26,14 +26,15 @@ func mockPages() [][]int {
 
 func PrintOrder() {
 	total := 0
-	debug := false
+	debug := true
 
 	// rules, pageNumbers := getRulesAndPages("./day_05/test-input-1.txt")
-	rules, pageNumbers := getRulesAndPages("./day_05/input-day5.txt")
 
+	rules, pageNumbers := getRulesAndPages("./day_05/input-day5.txt")
 	pageNumbers = mockPages()
 
 	for _, update := range pageNumbers {
+		middleValue := 0
 		isValid := checkUpdate(update, rules)
 
 		if debug {
@@ -41,13 +42,17 @@ func PrintOrder() {
 		}
 
 		// Solution to part one can be found in branch day5-pt1
-		if !isValid {
+		for !isValid {
 			if debug {
 				fmt.Printf("Invalid update found %v\n", update)
 			}
 			fixedOrder := fixPrintOrder(update, rules)
-			total = total + getMiddleValue(fixedOrder, debug, update)
+
+			isValid = checkUpdate(fixedOrder, rules)
+			middleValue = getMiddleValue(fixedOrder, debug, update)
 		}
+		total = total + middleValue
+
 	}
 
 	fmt.Printf("The sum of middle numbers from updates is: %v\n\n", total)
@@ -135,7 +140,7 @@ func fixPrintOrder(wholeUpdate []int, ruleBook []rule) []int {
 }
 
 func conformToRule(wholeUpdate []int, checkIndex int, breakingIndex int) []int {
-	debug := false
+	debug := true
 	var fixedUpdate []int
 	if breakingIndex < 0 {
 		panic("Nothing to return")
@@ -156,6 +161,8 @@ func conformToRule(wholeUpdate []int, checkIndex int, breakingIndex int) []int {
 				fixedUpdate = append(fixedUpdate, wholeUpdate[breakingIndex])
 			} else if i == checkIndex+1 {
 				fixedUpdate = append(fixedUpdate, wholeUpdate[checkIndex])
+			} else if i > checkIndex+1 /* && i != breakingIndex */ {
+				fixedUpdate = append(fixedUpdate, wholeUpdate[i-1])
 			}
 		}
 
@@ -197,7 +204,7 @@ func checkRight(wholeUpdate []int, currentRule rule, checkIndex int) bool {
 		checkNumber = wholeUpdate[i]
 
 		if checkNumber == currentRule.before {
-			// fmt.Printf("Right check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
+			fmt.Printf("Right check: line %v breaks the rule %v\n", wholeUpdate, currentRule)
 			return false
 		}
 	}
