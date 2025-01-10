@@ -24,6 +24,33 @@ func GetInput(filep string) []string {
 	return inputLines
 }
 
+type coordinates struct {
+	x int
+	y int
+}
+
+// GetCoordinates parses all the coordiantes of the target string in the input. Returns a slice of
+// struct coordinates.
+func GetCoordinates(inputLines []string, target string) []coordinates {
+	firstLine := inputLines[0]
+	var targetCoordinates []coordinates
+
+	for y := 0; y < len(inputLines); y++ {
+		currentLine := inputLines[y]
+		for x := 0; x < len(firstLine); x++ {
+			currentChar := string([]rune(currentLine)[x])
+			if currentChar == target {
+				var newTarget coordinates
+				newTarget.x = x
+				newTarget.y = y
+				targetCoordinates = append(targetCoordinates, newTarget)
+			}
+		}
+	}
+
+	return targetCoordinates
+}
+
 // GetInput reads the input file and returns a slice containing the rows of the file.
 func GetInputV2(fileName string) []string {
 	bytesRead, _ := os.ReadFile(fileName)
