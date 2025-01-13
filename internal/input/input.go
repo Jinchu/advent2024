@@ -24,25 +24,25 @@ func GetInput(filep string) []string {
 	return inputLines
 }
 
-type coordinates struct {
-	x int
-	y int
+type Coordinates struct {
+	X int
+	Y int
 }
 
 // GetCoordinates parses all the coordiantes of the target string in the input. Returns a slice of
 // struct coordinates.
-func GetCoordinates(inputLines []string, target string) []coordinates {
+func GetCoordinates(inputLines []string, target string) []Coordinates {
 	firstLine := inputLines[0]
-	var targetCoordinates []coordinates
+	var targetCoordinates []Coordinates
 
 	for y := 0; y < len(inputLines); y++ {
 		currentLine := inputLines[y]
 		for x := 0; x < len(firstLine); x++ {
 			currentChar := string([]rune(currentLine)[x])
 			if currentChar == target {
-				var newTarget coordinates
-				newTarget.x = x
-				newTarget.y = y
+				var newTarget Coordinates
+				newTarget.X = x
+				newTarget.Y = y
 				targetCoordinates = append(targetCoordinates, newTarget)
 			}
 		}
