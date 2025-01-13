@@ -14,8 +14,11 @@ const (
 	west
 )
 
-func getGridSize(inputLines []string) string {
-	return "LOL"
+func getGridSize(inputLines []string) input.Coordinates {
+	var size input.Coordinates
+	size.Y = len(inputLines)
+	size.X = len(inputLines[0])
+	return size
 }
 
 func sameCoordinates(comp1 input.Coordinates, comp2 input.Coordinates) bool {
@@ -26,11 +29,13 @@ func sameCoordinates(comp1 input.Coordinates, comp2 input.Coordinates) bool {
 	}
 }
 
-func travelNorth(labMap []input.Coordinates, position input.Coordinates) input.Coordinates {
+func travelNorth(
+	mapSize input.Coordinates, labMap []input.Coordinates,
+	position input.Coordinates) input.Coordinates {
 	var trail []input.Coordinates
 
 	previousPosition := position
-	for y := position.Y; y < 7; y++ {
+	for y := position.Y; y < mapSize.Y; y++ {
 		position.Y = y
 		for _, block := range labMap {
 			if sameCoordinates(block, position) {
@@ -41,31 +46,42 @@ func travelNorth(labMap []input.Coordinates, position input.Coordinates) input.C
 		trail = append(trail, position) // TODO: this must be set or something like that
 		previousPosition = position
 	}
+	// TODO: found exit
+	fmt.Println("The guard will exit here")
 
 	return previousPosition
 }
 
-func travel(labMap []input.Coordinates, position input.Coordinates, direction Direction) {
-
+func travel(
+	mapSize input.Coordinates, labMap []input.Coordinates,
+	position input.Coordinates, direction Direction) {
+	debug := false
 	switch direction {
 	case north:
+		travelNorth(mapSize, labMap, position)
 	case east:
 	case south:
 	case west:
 	}
-	fmt.Println(labMap)
+
+	if debug {
+		fmt.Println(labMap)
+	}
 }
 
 func CalculateRoute() {
 	total := 0
 
 	inputLines := input.GetInputV2("./day_06/test-input-1.txt")
-	// inputLines := input.GetInputV2("./day_06/input-day6.txt")
+	// inputLines := input.GetInputV2("../downloads/input-day6.txt")
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
-	fmt.Printf("Found %v blocks in total.\n", len(blockCoordinates))
-	fmt.Printf("Found %v blocks in total.\n", len(startingPoint))
+	mapSize := getGridSize(inputLines)
 
-	travel(blockCoordinates, startingPoint[0], north)
+	fmt.Printf("Found %v blocks in total.\n", len(blockCoordinates))
+	fmt.Printf("Found %v guards in total.\n", len(startingPoint))
+	fmt.Printf("The total size of the map is %v by %v\n", mapSize.X, mapSize.Y)
+
+	travel(mapSize, blockCoordinates, startingPoint[0], north)
 	fmt.Printf("The lab guard will visit %v distinct positions\n", total)
 }
