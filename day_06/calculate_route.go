@@ -31,23 +31,28 @@ func sameCoordinates(comp1 input.Coordinates, comp2 input.Coordinates) bool {
 
 func travelNorth(
 	mapSize input.Coordinates, labMap []input.Coordinates,
-	position input.Coordinates) input.Coordinates {
+	position input.Coordinates, direction Direction) input.Coordinates {
 	var trail []input.Coordinates
 
 	previousPosition := position
-	for y := position.Y; y < mapSize.Y; y++ {
+	for y := position.Y; y < mapSize.Y; {
+
 		position.Y = y
 		for _, block := range labMap {
 			if sameCoordinates(block, position) {
 				// Hitting a block
+				fmt.Printf("Found a block at position %v\n", previousPosition)
 				return previousPosition
 			}
 		}
 		trail = append(trail, position) // TODO: this must be set or something like that
 		previousPosition = position
+		if direction == north {
+			y--
+		}
 	}
 	// TODO: found exit
-	fmt.Println("The guard will exit here")
+	fmt.Printf("The guard will exit here %v\n", previousPosition)
 
 	return previousPosition
 }
@@ -58,7 +63,7 @@ func travel(
 	debug := false
 	switch direction {
 	case north:
-		travelNorth(mapSize, labMap, position)
+		travelNorth(mapSize, labMap, position, direction)
 	case east:
 	case south:
 	case west:
