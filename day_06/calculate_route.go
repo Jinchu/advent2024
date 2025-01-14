@@ -120,6 +120,29 @@ func travel(
 	return updatedPosition
 }
 
+func guardNavigation(
+	mapSize input.Coordinates, blockMap []input.Coordinates,
+	position input.Coordinates) {
+	i := 0
+	j := 0
+	allDirections := [...]Direction{north, east, south, west}
+
+	for true {
+		if j > 512 {
+			panic("oops")
+		}
+
+		position = travel(mapSize, blockMap, position, allDirections[i])
+		i++
+		j++
+
+		if i >= len(allDirections) {
+			i = 0
+		}
+
+	}
+}
+
 func CalculateRoute() {
 	total := 0
 
@@ -132,6 +155,9 @@ func CalculateRoute() {
 	fmt.Printf("Found %v blocks in total.\n", len(blockCoordinates))
 	fmt.Printf("Found %v guards in total.\n", len(startingPoint))
 	fmt.Printf("The total size of the map is %v by %v\n", mapSize.X, mapSize.Y)
+
+	guardNavigation(mapSize, blockCoordinates, startingPoint[0])
+	fmt.Println("-----")
 
 	position := travel(mapSize, blockCoordinates, startingPoint[0], north)
 	position = travel(mapSize, blockCoordinates, position, east)
