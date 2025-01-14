@@ -29,7 +29,7 @@ func sameCoordinates(comp1 input.Coordinates, comp2 input.Coordinates) bool {
 	}
 }
 
-func travelNorth(
+func travelNorthSouth(
 	mapSize input.Coordinates, labMap []input.Coordinates,
 	position input.Coordinates, direction Direction) input.Coordinates {
 	var trail []input.Coordinates
@@ -47,9 +47,16 @@ func travelNorth(
 		}
 		trail = append(trail, position) // TODO: this must be set or something like that
 		previousPosition = position
-		if direction == north {
+
+		switch direction {
+		case north:
 			y--
+		case south:
+			y++
+		default:
+			panic("unexpected direction")
 		}
+
 	}
 	// TODO: found exit
 	fmt.Printf("The guard will exit here %v\n", previousPosition)
@@ -57,21 +64,60 @@ func travelNorth(
 	return previousPosition
 }
 
+func travelEastWest(
+	mapSize input.Coordinates, labMap []input.Coordinates,
+	position input.Coordinates, direction Direction) input.Coordinates {
+	var trail []input.Coordinates
+
+	previousPosition := position
+	for x := position.X; x < mapSize.X; {
+		position.X = x
+
+		for _, block := range labMap {
+			if sameCoordinates(block, position) {
+				fmt.Printf("Found a block at position %v\n", previousPosition)
+				return previousPosition
+			}
+		}
+		trail = append(trail, position) // TODO: this must be a set or something
+		previousPosition = position
+
+		switch direction {
+		case east:
+			x++
+		case west:
+			x--
+		default:
+			panic("unexpected direction")
+		}
+	}
+
+	return previousPosition
+}
+
 func travel(
 	mapSize input.Coordinates, labMap []input.Coordinates,
-	position input.Coordinates, direction Direction) {
+	position input.Coordinates, direction Direction) input.Coordinates {
 	debug := false
+	var updatedPosition input.Coordinates
 	switch direction {
 	case north:
-		travelNorth(mapSize, labMap, position, direction)
+		updatedPosition = travelNorthSouth(mapSize, labMap, position, direction)
 	case east:
+		updatedPosition = travelEastWest(mapSize, labMap, position, direction)
 	case south:
+		updatedPosition = travelNorthSouth(mapSize, labMap, position, direction)
 	case west:
+		updatedPosition = travelEastWest(mapSize, labMap, position, direction)
+	default:
+		panic("unexpected direction")
 	}
 
 	if debug {
 		fmt.Println(labMap)
 	}
+
+	return updatedPosition
 }
 
 func CalculateRoute() {
@@ -87,6 +133,9 @@ func CalculateRoute() {
 	fmt.Printf("Found %v guards in total.\n", len(startingPoint))
 	fmt.Printf("The total size of the map is %v by %v\n", mapSize.X, mapSize.Y)
 
-	travel(mapSize, blockCoordinates, startingPoint[0], north)
+	position := travel(mapSize, blockCoordinates, startingPoint[0], north)
+	position = travel(mapSize, blockCoordinates, position, east)
+	position = travel(mapSize, blockCoordinates, position, south)
+	position = travel(mapSize, blockCoordinates, position, west)
 	fmt.Printf("The lab guard will visit %v distinct positions\n", total)
 }
