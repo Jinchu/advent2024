@@ -29,26 +29,25 @@ func sameCoordinates(comp1 input.Coordinates, comp2 input.Coordinates) bool {
 	}
 }
 
-func travelNorthSouth(
-	mapSize input.Coordinates, labMap []input.Coordinates,
-	position input.Coordinates, direction Direction) input.Coordinates {
+func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) *guardRoute {
 	var trail []input.Coordinates
 
-	previousPosition := position
-	for y := position.Y; y < mapSize.Y; {
+	previousPosition := route.position
+	for y := route.position.Y; y < route.mapSize.Y; {
 
-		position.Y = y
+		route.position.Y = y
 		for _, block := range labMap {
-			if sameCoordinates(block, position) {
+			if sameCoordinates(block, route.position) {
 				// Hitting a block
 				fmt.Printf("Found a block at position %v\n", previousPosition)
-				return previousPosition
+				route.position = previousPosition
+				return route
 			}
 		}
-		trail = append(trail, position) // TODO: this must be set or something like that
-		previousPosition = position
+		trail = append(trail, route.position) // TODO: this must be set or something like that
+		previousPosition = route.position
 
-		switch direction {
+		switch route.direction {
 		case north:
 			y--
 		case south:
@@ -59,30 +58,30 @@ func travelNorthSouth(
 
 	}
 	// TODO: found exit
-	fmt.Printf("The guard will exit here %v\n", previousPosition)
+	route.position = previousPosition
+	fmt.Printf("The guard will exit here %v\n", route.position)
 
-	return previousPosition
+	return route
 }
 
-func travelEastWest(
-	mapSize input.Coordinates, labMap []input.Coordinates,
-	position input.Coordinates, direction Direction) input.Coordinates {
+func (route *guardRoute) travelEastWest(labMap []input.Coordinates) *guardRoute {
 	var trail []input.Coordinates
 
-	previousPosition := position
-	for x := position.X; x < mapSize.X; {
-		position.X = x
+	previousPosition := route.position
+	for x := route.position.X; x < route.mapSize.X; {
+		route.position.X = x
 
 		for _, block := range labMap {
-			if sameCoordinates(block, position) {
+			if sameCoordinates(block, route.position) {
 				fmt.Printf("Found a block at position %v\n", previousPosition)
-				return previousPosition
+				route.position = previousPosition
+				return route
 			}
 		}
-		trail = append(trail, position) // TODO: this must be a set or something
-		previousPosition = position
+		trail = append(trail, route.position) // TODO: this must be a set or something
+		previousPosition = route.position
 
-		switch direction {
+		switch route.direction {
 		case east:
 			x++
 		case west:
@@ -92,23 +91,21 @@ func travelEastWest(
 		}
 	}
 
-	return previousPosition
+	route.position = previousPosition
+	return route
 }
 
-func travel(
-	mapSize input.Coordinates, labMap []input.Coordinates,
-	position input.Coordinates, direction Direction) input.Coordinates {
+func (route *guardRoute) travel(labMap []input.Coordinates) *guardRoute {
 	debug := false
-	var updatedPosition input.Coordinates
-	switch direction {
+	switch route.direction {
 	case north:
-		updatedPosition = travelNorthSouth(mapSize, labMap, position, direction)
+		route = route.travelNorthSouth(labMap)
 	case east:
-		updatedPosition = travelEastWest(mapSize, labMap, position, direction)
+		route = route.travelEastWest(labMap)
 	case south:
-		updatedPosition = travelNorthSouth(mapSize, labMap, position, direction)
+		route = route.travelNorthSouth(labMap)
 	case west:
-		updatedPosition = travelEastWest(mapSize, labMap, position, direction)
+		route = route.travelEastWest(labMap)
 	default:
 		panic("unexpected direction")
 	}
@@ -117,22 +114,21 @@ func travel(
 		fmt.Println(labMap)
 	}
 
-	return updatedPosition
+	return route
 }
 
-func guardNavigation(
-	mapSize input.Coordinates, blockMap []input.Coordinates,
-	position input.Coordinates) {
+func (route *guardRoute) guardNavigation(blockMap []input.Coordinates) {
 	i := 0
 	j := 0
 	allDirections := [...]Direction{north, east, south, west}
 
 	for true {
-		if j > 512 {
+		if j > 12 {
 			panic("oops")
 		}
 
-		position = travel(mapSize, blockMap, position, allDirections[i])
+		route.direction = allDirections[i]
+		route = route.travel(blockMap)
 		i++
 		j++
 
@@ -143,25 +139,38 @@ func guardNavigation(
 	}
 }
 
+type guardRoute struct {
+	mapSize   input.Coordinates
+	position  input.Coordinates
+	trail     map[string]bool
+	direction Direction
+}
+
 func CalculateRoute() {
 	total := 0
 
+	var route guardRoute
 	inputLines := input.GetInputV2("./day_06/test-input-1.txt")
 	// inputLines := input.GetInputV2("../downloads/input-day6.txt")
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
-	mapSize := getGridSize(inputLines)
+
+	route.mapSize = getGridSize(inputLines)
+	route.position = startingPoint[0]
+	route.direction = north
 
 	fmt.Printf("Found %v blocks in total.\n", len(blockCoordinates))
 	fmt.Printf("Found %v guards in total.\n", len(startingPoint))
-	fmt.Printf("The total size of the map is %v by %v\n", mapSize.X, mapSize.Y)
+	fmt.Printf("The total size of the map is %v by %v\n", route.mapSize.X, route.mapSize.Y)
 
-	guardNavigation(mapSize, blockCoordinates, startingPoint[0])
+	route.guardNavigation(blockCoordinates)
 	fmt.Println("-----")
 
-	position := travel(mapSize, blockCoordinates, startingPoint[0], north)
-	position = travel(mapSize, blockCoordinates, position, east)
-	position = travel(mapSize, blockCoordinates, position, south)
-	position = travel(mapSize, blockCoordinates, position, west)
+	/*
+		position := travel(route.mapSize, blockCoordinates, startingPoint[0], north)
+		position = travel(route.mapSize, blockCoordinates, position, east)
+		position = travel(route.mapSize, blockCoordinates, position, south)
+		position = travel(route.mapSize, blockCoordinates, position, west)
+	*/
 	fmt.Printf("The lab guard will visit %v distinct positions\n", total)
 }
