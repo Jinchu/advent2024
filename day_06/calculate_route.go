@@ -44,10 +44,8 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *gu
 		}
 
 	}
-	// TODO: found exit
 	route.position = previousPosition
-
-	return true, route
+	return true, route // Found the exit
 }
 
 // Calculate the travel in East-West direction. Returns true if the route exist the grid.
@@ -80,7 +78,7 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates) (bool, *guar
 	}
 
 	route.position = previousPosition
-	return true, route
+	return true, route // Found the exit
 }
 
 // Calculates the travel to the direction defined in the route structure. Returns updated route
