@@ -14,21 +14,6 @@ const (
 	west
 )
 
-func getGridSize(inputLines []string) input.Coordinates {
-	var size input.Coordinates
-	size.Y = len(inputLines)
-	size.X = len(inputLines[0])
-	return size
-}
-
-func sameCoordinates(comp1 input.Coordinates, comp2 input.Coordinates) bool {
-	if comp1.X == comp2.X && comp1.Y == comp2.Y {
-		return true
-	} else {
-		return false
-	}
-}
-
 // Calculate the travel in North-South direction. Returns true if the route exist the grid.
 // Otherwise false
 func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *guardRoute) {
@@ -39,7 +24,7 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *gu
 
 		route.position.Y = y
 		for _, block := range labMap {
-			if sameCoordinates(block, route.position) {
+			if input.SameCoordinates(block, route.position) {
 				// Hitting a block
 				fmt.Printf("Found a block at position %v\n", previousPosition)
 				route.position = previousPosition
@@ -75,7 +60,7 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates) (bool, *guar
 		route.position.X = x
 
 		for _, block := range labMap {
-			if sameCoordinates(block, route.position) {
+			if input.SameCoordinates(block, route.position) {
 				fmt.Printf("Found a block at position %v\n", previousPosition)
 				route.position = previousPosition
 				return false, route
@@ -98,6 +83,8 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates) (bool, *guar
 	return true, route
 }
 
+// Calculates the travel to the direction defined in the route structure. Returns updated route
+// struck and boolean true if an exit was found. The boolean will be false otherwise
 func (route *guardRoute) travel(labMap []input.Coordinates) (bool, *guardRoute) {
 	debug := false
 	var exitFound bool
@@ -165,7 +152,7 @@ func CalculateRoute() {
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
 
-	route.mapSize = getGridSize(inputLines)
+	route.mapSize = input.GetGridSize(inputLines)
 	route.position = startingPoint[0]
 	route.direction = north
 

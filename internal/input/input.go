@@ -51,6 +51,23 @@ func GetCoordinates(inputLines []string, target string) []Coordinates {
 	return targetCoordinates
 }
 
+// Return the size of the gird as coordinates pointing to the maximum values.
+func GetGridSize(inputLines []string) Coordinates {
+	var size Coordinates
+	size.Y = len(inputLines)
+	size.X = len(inputLines[0])
+	return size
+}
+
+// Returns true if the coordinates match
+func SameCoordinates(comp1 Coordinates, comp2 Coordinates) bool {
+	if comp1.X == comp2.X && comp1.Y == comp2.Y {
+		return true
+	} else {
+		return false
+	}
+}
+
 // GetInput reads the input file and returns a slice containing the rows of the file.
 func GetInputV2(fileName string) []string {
 	bytesRead, _ := os.ReadFile(fileName)
