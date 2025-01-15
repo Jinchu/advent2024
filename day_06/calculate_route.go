@@ -29,7 +29,9 @@ func sameCoordinates(comp1 input.Coordinates, comp2 input.Coordinates) bool {
 	}
 }
 
-func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) *guardRoute {
+// Calculate the travel in North-South direction. Returns true if the route exist the grid.
+// Otherwise false
+func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *guardRoute) {
 	var trail []input.Coordinates
 
 	previousPosition := route.position
@@ -41,7 +43,7 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) *guardRout
 				// Hitting a block
 				fmt.Printf("Found a block at position %v\n", previousPosition)
 				route.position = previousPosition
-				return route
+				return false, route
 			}
 		}
 		trail = append(trail, route.position) // TODO: this must be set or something like that
@@ -59,12 +61,13 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) *guardRout
 	}
 	// TODO: found exit
 	route.position = previousPosition
-	fmt.Printf("The guard will exit here %v\n", route.position)
 
-	return route
+	return true, route
 }
 
-func (route *guardRoute) travelEastWest(labMap []input.Coordinates) *guardRoute {
+// Calculate the travel in East-West direction. Returns true if the route exist the grid.
+// Otherwise false
+func (route *guardRoute) travelEastWest(labMap []input.Coordinates) (bool, *guardRoute) {
 	var trail []input.Coordinates
 
 	previousPosition := route.position
@@ -75,7 +78,7 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates) *guardRoute 
 			if sameCoordinates(block, route.position) {
 				fmt.Printf("Found a block at position %v\n", previousPosition)
 				route.position = previousPosition
-				return route
+				return false, route
 			}
 		}
 		trail = append(trail, route.position) // TODO: this must be a set or something
@@ -92,20 +95,21 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates) *guardRoute 
 	}
 
 	route.position = previousPosition
-	return route
+	return true, route
 }
 
-func (route *guardRoute) travel(labMap []input.Coordinates) *guardRoute {
+func (route *guardRoute) travel(labMap []input.Coordinates) (bool, *guardRoute) {
 	debug := false
+	var exitFound bool
 	switch route.direction {
 	case north:
-		route = route.travelNorthSouth(labMap)
+		exitFound, route = route.travelNorthSouth(labMap)
 	case east:
-		route = route.travelEastWest(labMap)
+		exitFound, route = route.travelEastWest(labMap)
 	case south:
-		route = route.travelNorthSouth(labMap)
+		exitFound, route = route.travelNorthSouth(labMap)
 	case west:
-		route = route.travelEastWest(labMap)
+		exitFound, route = route.travelEastWest(labMap)
 	default:
 		panic("unexpected direction")
 	}
@@ -114,21 +118,27 @@ func (route *guardRoute) travel(labMap []input.Coordinates) *guardRoute {
 		fmt.Println(labMap)
 	}
 
-	return route
+	return exitFound, route
 }
 
 func (route *guardRoute) guardNavigation(blockMap []input.Coordinates) {
+	var exitFound bool
+	killSwitch := 1200
 	i := 0
 	j := 0
 	allDirections := [...]Direction{north, east, south, west}
 
 	for true {
-		if j > 12 {
-			panic("oops")
+		if j > killSwitch {
+			panic("The kill switch was triggered")
 		}
 
 		route.direction = allDirections[i]
-		route = route.travel(blockMap)
+		exitFound, route = route.travel(blockMap)
+		if exitFound {
+			fmt.Printf("The guard will exit here %v\n", route.position)
+			return
+		}
 		i++
 		j++
 
