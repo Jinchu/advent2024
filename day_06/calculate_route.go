@@ -3,6 +3,7 @@ package day06
 import (
 	"advent/internal/input"
 	"fmt"
+	"strconv"
 )
 
 type Direction int64
@@ -17,8 +18,6 @@ const (
 // Calculate the travel in North-South direction. Returns true if the route exist the grid.
 // Otherwise false
 func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *guardRoute) {
-	var trail []input.Coordinates
-
 	previousPosition := route.position
 	for y := route.position.Y; y < route.mapSize.Y; {
 
@@ -26,12 +25,12 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *gu
 		for _, block := range labMap {
 			if input.SameCoordinates(block, route.position) {
 				// Hitting a block
-				fmt.Printf("Found a block at position %v\n", previousPosition)
 				route.position = previousPosition
 				return false, route
 			}
 		}
-		trail = append(trail, route.position) // TODO: this must be set or something like that
+		trailPoint := convertToStr(route.position)
+		route.trail[trailPoint] = true
 		previousPosition = route.position
 
 		switch route.direction {
@@ -51,20 +50,18 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *gu
 // Calculate the travel in East-West direction. Returns true if the route exist the grid.
 // Otherwise false
 func (route *guardRoute) travelEastWest(labMap []input.Coordinates) (bool, *guardRoute) {
-	var trail []input.Coordinates
-
 	previousPosition := route.position
 	for x := route.position.X; x < route.mapSize.X; {
 		route.position.X = x
 
 		for _, block := range labMap {
 			if input.SameCoordinates(block, route.position) {
-				fmt.Printf("Found a block at position %v\n", previousPosition)
 				route.position = previousPosition
 				return false, route
 			}
 		}
-		trail = append(trail, route.position) // TODO: this must be a set or something
+		trailPoint := convertToStr(route.position)
+		route.trail[trailPoint] = true
 		previousPosition = route.position
 
 		switch route.direction {
@@ -79,6 +76,34 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates) (bool, *guar
 
 	route.position = previousPosition
 	return true, route // Found the exit
+}
+
+// addPading prep ends the ordinal string with zeroes so that the length is always 3
+func addPading(orginalString string) string {
+	var padded string
+	switch len(orginalString) {
+	case 1:
+		padded = "00" + orginalString
+	case 2:
+		padded = "0" + orginalString
+	case 3:
+		padded = orginalString
+	default:
+		panic("Cannot convert to sting with these assumptions")
+	}
+
+	return padded
+}
+
+func convertToStr(originalObject input.Coordinates) string {
+	var coordinateStr string
+
+	xStr := addPading(strconv.Itoa(originalObject.X))
+	yStr := addPading(strconv.Itoa(originalObject.Y))
+
+	coordinateStr = xStr + "," + yStr
+
+	return coordinateStr
 }
 
 // Calculates the travel to the direction defined in the route structure. Returns updated route
@@ -142,17 +167,16 @@ type guardRoute struct {
 }
 
 func CalculateRoute() {
-	total := 0
-
 	var route guardRoute
-	inputLines := input.GetInputV2("./day_06/test-input-1.txt")
-	// inputLines := input.GetInputV2("../downloads/input-day6.txt")
+	// inputLines := input.GetInputV2("./day_06/test-input-1.txt")
+	inputLines := input.GetInputV2("../downloads/input-day6.txt")
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
 
 	route.mapSize = input.GetGridSize(inputLines)
 	route.position = startingPoint[0]
 	route.direction = north
+	route.trail = make(map[string]bool)
 
 	fmt.Printf("Found %v blocks in total.\n", len(blockCoordinates))
 	fmt.Printf("Found %v guards in total.\n", len(startingPoint))
@@ -161,11 +185,5 @@ func CalculateRoute() {
 	route.guardNavigation(blockCoordinates)
 	fmt.Println("-----")
 
-	/*
-		position := travel(route.mapSize, blockCoordinates, startingPoint[0], north)
-		position = travel(route.mapSize, blockCoordinates, position, east)
-		position = travel(route.mapSize, blockCoordinates, position, south)
-		position = travel(route.mapSize, blockCoordinates, position, west)
-	*/
-	fmt.Printf("The lab guard will visit %v distinct positions\n", total)
+	fmt.Printf("The lab guard will visit %v distinct positions\n", len(route.trail))
 }
