@@ -18,7 +18,8 @@ const (
 
 // Calculate the travel in North-South direction. Returns true if the route exist the grid.
 // Otherwise false
-func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *guardRoute) {
+func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates,
+	loopDetection bool) (int64, *guardRoute) {
 	previousPosition := route.position
 	for y := route.position.Y; y < route.mapSize.Y; {
 
@@ -27,11 +28,20 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *gu
 			if input.SameCoordinates(block, route.position) {
 				// Hitting a block
 				route.position = previousPosition
-				return false, route
+				return 0, route
 			}
 		}
-		trailPoint := convertToStr(route.position)
-		route.trail[trailPoint] = true
+		if loopDetection {
+			trailPoint := convertToStrWDirection(route.position, route.direction)
+			if route.trail[trailPoint] {
+				fmt.Println("Loop detected")
+				return 2, route
+			}
+			route.trail[trailPoint] = true
+		} else {
+			trailPoint := convertToStr(route.position)
+			route.trail[trailPoint] = true
+		}
 		previousPosition = route.position
 
 		switch route.direction {
@@ -45,12 +55,13 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates) (bool, *gu
 
 	}
 	route.position = previousPosition
-	return true, route // Found the exit
+	return 1, route // Found the exit
 }
 
 // Calculate the travel in East-West direction. Returns true if the route exist the grid.
 // Otherwise false
-func (route *guardRoute) travelEastWest(labMap []input.Coordinates) (bool, *guardRoute) {
+func (route *guardRoute) travelEastWest(labMap []input.Coordinates,
+	loopDetection bool) (int64, *guardRoute) {
 	previousPosition := route.position
 	for x := route.position.X; x < route.mapSize.X; {
 		route.position.X = x
@@ -58,11 +69,20 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates) (bool, *guar
 		for _, block := range labMap {
 			if input.SameCoordinates(block, route.position) {
 				route.position = previousPosition
-				return false, route
+				return 0, route
 			}
 		}
-		trailPoint := convertToStr(route.position)
-		route.trail[trailPoint] = true
+		if loopDetection {
+			trailPoint := convertToStrWDirection(route.position, route.direction)
+			if route.trail[trailPoint] {
+				fmt.Println("Loop detected")
+				return 2, route
+			}
+			route.trail[trailPoint] = true
+		} else {
+			trailPoint := convertToStr(route.position)
+			route.trail[trailPoint] = true
+		}
 		previousPosition = route.position
 
 		switch route.direction {
@@ -76,11 +96,12 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates) (bool, *guar
 	}
 
 	route.position = previousPosition
-	return true, route // Found the exit
+	return 1, route // Found the exit
 }
 
 // addPading prep ends the ordinal string with zeroes so that the length is always 3
 func addPading(orginalString string) string {
+	fmt.Printf("Original: %v\n", orginalString)
 	var padded string
 	switch len(orginalString) {
 	case 1:
@@ -90,15 +111,47 @@ func addPading(orginalString string) string {
 	case 3:
 		padded = orginalString
 	default:
+		fmt.Printf("Original: %v\n", orginalString)
 		panic("Cannot convert to sting with these assumptions")
 	}
 
 	return padded
 }
 
+func convertToStrWDirection(originalObject input.Coordinates, direction Direction) string {
+	var coordinateStr string
+	var directionStr string
+
+	if originalObject.X < 0 || originalObject.Y < 0 {
+		panic("wtf with directions")
+	}
+	if originalObject.X == 8 || originalObject.Y == 8 {
+		panic("for reference")
+	}
+	xStr := addPading(strconv.Itoa(originalObject.X))
+	yStr := addPading(strconv.Itoa(originalObject.Y))
+	switch direction {
+	case north:
+		directionStr = "north"
+	case east:
+		directionStr = "east"
+	case south:
+		directionStr = "south"
+	case west:
+		directionStr = "west"
+	}
+
+	coordinateStr = xStr + "," + yStr + "," + directionStr
+
+	return coordinateStr
+}
+
 func convertToStr(originalObject input.Coordinates) string {
 	var coordinateStr string
 
+	if originalObject.X < 0 || originalObject.Y < 0 {
+		panic("wtf")
+	}
 	xStr := addPading(strconv.Itoa(originalObject.X))
 	yStr := addPading(strconv.Itoa(originalObject.Y))
 
@@ -131,18 +184,19 @@ func convertToCoordinate(coordinateString string) input.Coordinates {
 
 // Calculates the travel to the direction defined in the route structure. Returns updated route
 // struck and boolean true if an exit was found. The boolean will be false otherwise
-func (route *guardRoute) travel(labMap []input.Coordinates) (bool, *guardRoute) {
+func (route *guardRoute) travel(labMap []input.Coordinates,
+	loopDetection bool) (int64, *guardRoute) {
 	debug := false
-	var exitFound bool
+	var exitFound int64
 	switch route.direction {
 	case north:
-		exitFound, route = route.travelNorthSouth(labMap)
+		exitFound, route = route.travelNorthSouth(labMap, loopDetection)
 	case east:
-		exitFound, route = route.travelEastWest(labMap)
+		exitFound, route = route.travelEastWest(labMap, loopDetection)
 	case south:
-		exitFound, route = route.travelNorthSouth(labMap)
+		exitFound, route = route.travelNorthSouth(labMap, loopDetection)
 	case west:
-		exitFound, route = route.travelEastWest(labMap)
+		exitFound, route = route.travelEastWest(labMap, loopDetection)
 	default:
 		panic("unexpected direction")
 	}
@@ -154,8 +208,8 @@ func (route *guardRoute) travel(labMap []input.Coordinates) (bool, *guardRoute) 
 	return exitFound, route
 }
 
-func (route *guardRoute) guardNavigation(blockMap []input.Coordinates) {
-	var exitFound bool
+func (route *guardRoute) guardNavigation(blockMap []input.Coordinates, loopDetection bool) int {
+	var exitFound int64
 	killSwitch := 1200
 	i := 0
 	j := 0
@@ -167,10 +221,14 @@ func (route *guardRoute) guardNavigation(blockMap []input.Coordinates) {
 		}
 
 		route.direction = allDirections[i]
-		exitFound, route = route.travel(blockMap)
-		if exitFound {
+		exitFound, route = route.travel(blockMap, loopDetection)
+		if exitFound == 1 {
 			fmt.Printf("The guard will exit here %v\n", route.position)
-			return
+			return 0
+		}
+		if exitFound == 2 {
+			fmt.Printf("Loop detected at position %v\n", route.position)
+			return 1
 		}
 		i++
 		j++
@@ -180,6 +238,8 @@ func (route *guardRoute) guardNavigation(blockMap []input.Coordinates) {
 		}
 
 	}
+
+	return 0
 }
 
 type guardRoute struct {
@@ -205,19 +265,34 @@ func CalculateRoute() {
 	fmt.Printf("Found %v guards in total.\n", len(startingPoint))
 	fmt.Printf("The total size of the map is %v by %v\n", route.mapSize.X, route.mapSize.Y)
 
-	route.guardNavigation(blockCoordinates)
+	route.guardNavigation(blockCoordinates, false)
 	fmt.Println("-----")
 
 	if len(route.trail) != 41 {
 		panic("You have broken the thing")
 	}
 
-	for i, v := range route.trail {
-		fmt.Printf("%v - %v\n", i, v)
-	}
+	startCoord := convertToStr(startingPoint[0])
+	route.trail[startCoord] = false
 
-	quickTest := convertToCoordinate("005,008")
-	fmt.Println(quickTest)
+	route.position = startingPoint[0]
+	route.direction = north
+	route.trail = make(map[string]bool)
+
+	improvedMap := blockCoordinates
+	tryBlock := convertToCoordinate("008,003")
+	improvedMap = append(improvedMap, tryBlock)
+	res := route.guardNavigation(improvedMap, true)
+	fmt.Println(res)
+
+	route.position = startingPoint[0]
+	route.direction = north
+	route.trail = make(map[string]bool)
+	improvedMap2 := blockCoordinates
+	tryBlock2 := convertToCoordinate("003,006")
+	improvedMap2 = append(improvedMap2, tryBlock2)
+	res = route.guardNavigation(improvedMap2, true)
+	fmt.Println(res)
 
 	fmt.Printf("The lab guard will visit %v distinct positions\n", len(route.trail))
 }
