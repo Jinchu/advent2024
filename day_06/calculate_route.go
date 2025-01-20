@@ -4,6 +4,7 @@ import (
 	"advent/internal/input"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Direction int64
@@ -106,6 +107,28 @@ func convertToStr(originalObject input.Coordinates) string {
 	return coordinateStr
 }
 
+func convertToCoordinate(coordinateString string) input.Coordinates {
+	var converted input.Coordinates
+
+	splitted := strings.Split(coordinateString, ",")
+
+	xInt, err := strconv.Atoi(splitted[0])
+	converted.X = xInt
+	if err != nil {
+		errorStr := fmt.Sprintf("Cannot convert %v", coordinateString)
+		panic(errorStr)
+	}
+
+	yInt, err := strconv.Atoi(splitted[1])
+	converted.Y = yInt
+	if err != nil {
+		errorStr := fmt.Sprintf("Cannot convert %v", coordinateString)
+		panic(errorStr)
+	}
+
+	return converted
+}
+
 // Calculates the travel to the direction defined in the route structure. Returns updated route
 // struck and boolean true if an exit was found. The boolean will be false otherwise
 func (route *guardRoute) travel(labMap []input.Coordinates) (bool, *guardRoute) {
@@ -168,8 +191,8 @@ type guardRoute struct {
 
 func CalculateRoute() {
 	var route guardRoute
-	// inputLines := input.GetInputV2("./day_06/test-input-1.txt")
-	inputLines := input.GetInputV2("../downloads/input-day6.txt")
+	inputLines := input.GetInputV2("./day_06/test-input-1.txt")
+	// inputLines := input.GetInputV2("../downloads/input-day6.txt")
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
 
@@ -184,6 +207,17 @@ func CalculateRoute() {
 
 	route.guardNavigation(blockCoordinates)
 	fmt.Println("-----")
+
+	if len(route.trail) != 41 {
+		panic("You have broken the thing")
+	}
+
+	for i, v := range route.trail {
+		fmt.Printf("%v - %v\n", i, v)
+	}
+
+	quickTest := convertToCoordinate("005,008")
+	fmt.Println(quickTest)
 
 	fmt.Printf("The lab guard will visit %v distinct positions\n", len(route.trail))
 }
