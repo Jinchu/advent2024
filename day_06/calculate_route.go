@@ -22,6 +22,9 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates,
 	loopDetection bool) (int64, *guardRoute) {
 	previousPosition := route.position
 	for y := route.position.Y; y < route.mapSize.Y; {
+		if y < 0 {
+			break
+		}
 
 		route.position.Y = y
 		for _, block := range labMap {
@@ -64,6 +67,9 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates,
 	loopDetection bool) (int64, *guardRoute) {
 	previousPosition := route.position
 	for x := route.position.X; x < route.mapSize.X; {
+		if x < 0 {
+			break
+		}
 		route.position.X = x
 
 		for _, block := range labMap {
@@ -118,15 +124,13 @@ func addPading(orginalString string) string {
 	return padded
 }
 
+// Returns a string representation of the input coordinates augmented with the given direction
 func convertToStrWDirection(originalObject input.Coordinates, direction Direction) string {
 	var coordinateStr string
 	var directionStr string
 
 	if originalObject.X < 0 || originalObject.Y < 0 {
-		panic("wtf with directions")
-	}
-	if originalObject.X == 8 || originalObject.Y == 8 {
-		panic("for reference")
+		panic("Encountered illegal coordinates [with directions]")
 	}
 	xStr := addPading(strconv.Itoa(originalObject.X))
 	yStr := addPading(strconv.Itoa(originalObject.Y))
@@ -146,11 +150,12 @@ func convertToStrWDirection(originalObject input.Coordinates, direction Directio
 	return coordinateStr
 }
 
+// Returns a string representation of the input coordinates
 func convertToStr(originalObject input.Coordinates) string {
 	var coordinateStr string
 
 	if originalObject.X < 0 || originalObject.Y < 0 {
-		panic("wtf")
+		panic("Encountered illegal coordinates []")
 	}
 	xStr := addPading(strconv.Itoa(originalObject.X))
 	yStr := addPading(strconv.Itoa(originalObject.Y))
