@@ -37,7 +37,6 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates,
 		if loopDetection {
 			trailPoint := convertToStrWDirection(route.position, route.direction)
 			if route.trail[trailPoint] {
-				fmt.Println("Loop detected")
 				return 2, route
 			}
 			route.trail[trailPoint] = true
@@ -81,7 +80,6 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates,
 		if loopDetection {
 			trailPoint := convertToStrWDirection(route.position, route.direction)
 			if route.trail[trailPoint] {
-				fmt.Println("Loop detected")
 				return 2, route
 			}
 			route.trail[trailPoint] = true
@@ -107,7 +105,6 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates,
 
 // addPading prep ends the ordinal string with zeroes so that the length is always 3
 func addPading(orginalString string) string {
-	fmt.Printf("Original: %v\n", orginalString)
 	var padded string
 	switch len(orginalString) {
 	case 1:
@@ -228,11 +225,11 @@ func (route *guardRoute) guardNavigation(blockMap []input.Coordinates, loopDetec
 		route.direction = allDirections[i]
 		exitFound, route = route.travel(blockMap, loopDetection)
 		if exitFound == 1 {
-			fmt.Printf("The guard will exit here %v\n", route.position)
+			// fmt.Printf("The guard will exit here %v\n", route.position)
 			return 0
 		}
 		if exitFound == 2 {
-			fmt.Printf("Loop detected at position %v\n", route.position)
+			// fmt.Printf("Loop detected at position %v\n", route.position)
 			return 1
 		}
 		i++
@@ -256,8 +253,8 @@ type guardRoute struct {
 
 func CalculateRoute() {
 	var route guardRoute
-	inputLines := input.GetInputV2("./day_06/test-input-1.txt")
-	// inputLines := input.GetInputV2("../downloads/input-day6.txt")
+	// inputLines := input.GetInputV2("./day_06/test-input-1.txt")
+	inputLines := input.GetInputV2("../downloads/input-day6.txt")
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
 
@@ -273,31 +270,25 @@ func CalculateRoute() {
 	route.guardNavigation(blockCoordinates, false)
 	fmt.Println("-----")
 
-	if len(route.trail) != 41 {
-		panic("You have broken the thing")
-	}
-
+	// Ignore the starting point
+	total := 0
 	startCoord := convertToStr(startingPoint[0])
 	route.trail[startCoord] = false
+	originalRoute := route.trail
 
-	route.position = startingPoint[0]
-	route.direction = north
-	route.trail = make(map[string]bool)
+	for coordinate, v := range originalRoute {
+		if v {
+			route.trail = make(map[string]bool)
+			route.position = startingPoint[0]
+			route.direction = north
 
-	improvedMap := blockCoordinates
-	tryBlock := convertToCoordinate("008,003")
-	improvedMap = append(improvedMap, tryBlock)
-	res := route.guardNavigation(improvedMap, true)
-	fmt.Println(res)
+			improvedMap := blockCoordinates
+			tryBlock := convertToCoordinate(coordinate)
+			improvedMap = append(improvedMap, tryBlock)
+			res := route.guardNavigation(improvedMap, true)
+			total = total + res
+		}
+	}
 
-	route.position = startingPoint[0]
-	route.direction = north
-	route.trail = make(map[string]bool)
-	improvedMap2 := blockCoordinates
-	tryBlock2 := convertToCoordinate("003,006")
-	improvedMap2 = append(improvedMap2, tryBlock2)
-	res = route.guardNavigation(improvedMap2, true)
-	fmt.Println(res)
-
-	fmt.Printf("The lab guard will visit %v distinct positions\n", len(route.trail))
+	fmt.Printf("The number of possible loops is: %v\n", total)
 }
