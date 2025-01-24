@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 type Direction int64
-
-var mutex sync.Mutex
 
 const (
 	north Direction = iota
@@ -39,6 +36,7 @@ func (route *guardRoute) travelNorthSouth(labMap map[input.Coordinates]bool,
 		if loopDetection {
 			trailPoint := convertToStrWDirection(route.position, route.direction)
 			if route.trail[trailPoint] {
+				// fmt.Printf("NS Loop detected %v\n", route.position)
 				return 2, route
 			}
 			route.trail[trailPoint] = true
@@ -59,6 +57,7 @@ func (route *guardRoute) travelNorthSouth(labMap map[input.Coordinates]bool,
 
 	}
 	route.position = previousPosition
+
 	return 1, route // Found the exit
 }
 
@@ -81,7 +80,7 @@ func (route *guardRoute) travelEastWest(labMap map[input.Coordinates]bool,
 		if loopDetection {
 			trailPoint := convertToStrWDirection(route.position, route.direction)
 			if route.trail[trailPoint] {
-				// fmt.Printf("Loop detected %v\n", route.position)
+				// fmt.Printf("EW Loop detected %v\n", route.position)
 				return 2, route
 			}
 			route.trail[trailPoint] = true
@@ -255,8 +254,8 @@ type guardRoute struct {
 
 func CalculateRoute() {
 	var route guardRoute
-	inputLines := input.GetInputV2("./day_06/test-input-1.txt")
-	// inputLines := input.GetInputV2("../downloads/input-day6.txt")
+	// inputLines := input.GetInputV2("./day_06/test-input-1.txt")
+	inputLines := input.GetInputV2("../downloads/input-day6.txt")
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
 
@@ -285,9 +284,7 @@ func CalculateRoute() {
 	originalRoute := route.trail
 
 	for coordinate, v := range originalRoute {
-		fmt.Printf("----------- %v\n", coordinate)
 		if v {
-			mutex.Lock()
 			route.trail = make(map[string]bool)
 			route.position = startingPoint[0]
 			route.direction = north
@@ -298,8 +295,7 @@ func CalculateRoute() {
 			res := route.guardNavigation(improvedMap, true)
 			// fmt.Printf("res: %v\n", res)
 			total = total + res
-			// fmt.Printf("total: %v\n", total)
-			mutex.Unlock()
+			delete(improvedMap, tryBlock)
 		}
 	}
 
