@@ -18,7 +18,7 @@ const (
 
 // Calculate the travel in North-South direction. Returns true if the route exist the grid.
 // Otherwise false
-func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates,
+func (route *guardRoute) travelNorthSouth(labMap map[input.Coordinates]bool,
 	loopDetection bool) (int64, *guardRoute) {
 	previousPosition := route.position
 	for y := route.position.Y; y < route.mapSize.Y; {
@@ -27,13 +27,12 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates,
 		}
 
 		route.position.Y = y
-		for _, block := range labMap {
-			if input.SameCoordinates(block, route.position) {
-				// Hitting a block
-				route.position = previousPosition
-				return 0, route
-			}
+		if labMap[route.position] {
+			// Hitting a block
+			route.position = previousPosition
+			return 0, route
 		}
+
 		if loopDetection {
 			trailPoint := convertToStrWDirection(route.position, route.direction)
 			if route.trail[trailPoint] {
@@ -62,7 +61,7 @@ func (route *guardRoute) travelNorthSouth(labMap []input.Coordinates,
 
 // Calculate the travel in East-West direction. Returns true if the route exist the grid.
 // Otherwise false
-func (route *guardRoute) travelEastWest(labMap []input.Coordinates,
+func (route *guardRoute) travelEastWest(labMap map[input.Coordinates]bool,
 	loopDetection bool) (int64, *guardRoute) {
 	previousPosition := route.position
 	for x := route.position.X; x < route.mapSize.X; {
@@ -71,15 +70,15 @@ func (route *guardRoute) travelEastWest(labMap []input.Coordinates,
 		}
 		route.position.X = x
 
-		for _, block := range labMap {
-			if input.SameCoordinates(block, route.position) {
-				route.position = previousPosition
-				return 0, route
-			}
+		if labMap[route.position] {
+			route.position = previousPosition
+			return 0, route
 		}
+
 		if loopDetection {
 			trailPoint := convertToStrWDirection(route.position, route.direction)
 			if route.trail[trailPoint] {
+				// fmt.Printf("Loop detected %v\n", route.position)
 				return 2, route
 			}
 			route.trail[trailPoint] = true
@@ -186,7 +185,7 @@ func convertToCoordinate(coordinateString string) input.Coordinates {
 
 // Calculates the travel to the direction defined in the route structure. Returns updated route
 // struck and boolean true if an exit was found. The boolean will be false otherwise
-func (route *guardRoute) travel(labMap []input.Coordinates,
+func (route *guardRoute) travel(labMap map[input.Coordinates]bool,
 	loopDetection bool) (int64, *guardRoute) {
 	debug := false
 	var exitFound int64
@@ -210,7 +209,7 @@ func (route *guardRoute) travel(labMap []input.Coordinates,
 	return exitFound, route
 }
 
-func (route *guardRoute) guardNavigation(blockMap []input.Coordinates, loopDetection bool) int {
+func (route *guardRoute) guardNavigation(blockMap map[input.Coordinates]bool, loopDetection bool) int {
 	var exitFound int64
 	killSwitch := 1200
 	i := 0
@@ -253,10 +252,15 @@ type guardRoute struct {
 
 func CalculateRoute() {
 	var route guardRoute
-	// inputLines := input.GetInputV2("./day_06/test-input-1.txt")
-	inputLines := input.GetInputV2("../downloads/input-day6.txt")
+	inputLines := input.GetInputV2("./day_06/test-input-1.txt")
+	// inputLines := input.GetInputV2("../downloads/input-day6.txt")
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
+
+	blockMap := make(map[input.Coordinates]bool)
+	for _, v := range blockCoordinates {
+		blockMap[v] = true
+	}
 
 	route.mapSize = input.GetGridSize(inputLines)
 	route.position = startingPoint[0]
@@ -267,8 +271,9 @@ func CalculateRoute() {
 	fmt.Printf("Found %v guards in total.\n", len(startingPoint))
 	fmt.Printf("The total size of the map is %v by %v\n", route.mapSize.X, route.mapSize.Y)
 
-	route.guardNavigation(blockCoordinates, false)
+	route.guardNavigation(blockMap, false)
 	fmt.Println("-----")
+	fmt.Printf("lenght %v\n", len(route.trail))
 
 	// Ignore the starting point
 	total := 0
@@ -277,16 +282,23 @@ func CalculateRoute() {
 	originalRoute := route.trail
 
 	for coordinate, v := range originalRoute {
+		fmt.Printf("----------- %v\n", coordinate)
+		if true {
+			continue
+		}
 		if v {
+			// defer mutex.Unlock()
 			route.trail = make(map[string]bool)
 			route.position = startingPoint[0]
 			route.direction = north
 
-			improvedMap := blockCoordinates
+			improvedMap := blockMap
 			tryBlock := convertToCoordinate(coordinate)
-			improvedMap = append(improvedMap, tryBlock)
+			improvedMap[tryBlock] = true
 			res := route.guardNavigation(improvedMap, true)
+			// fmt.Printf("res: %v\n", res)
 			total = total + res
+			// fmt.Printf("total: %v\n", total)
 		}
 	}
 
