@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Direction int64
+
+var mutex sync.Mutex
 
 const (
 	north Direction = iota
@@ -283,11 +286,8 @@ func CalculateRoute() {
 
 	for coordinate, v := range originalRoute {
 		fmt.Printf("----------- %v\n", coordinate)
-		if true {
-			continue
-		}
 		if v {
-			// defer mutex.Unlock()
+			mutex.Lock()
 			route.trail = make(map[string]bool)
 			route.position = startingPoint[0]
 			route.direction = north
@@ -299,6 +299,7 @@ func CalculateRoute() {
 			// fmt.Printf("res: %v\n", res)
 			total = total + res
 			// fmt.Printf("total: %v\n", total)
+			mutex.Unlock()
 		}
 	}
 
