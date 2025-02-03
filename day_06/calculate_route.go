@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Direction int64
@@ -16,11 +17,14 @@ const (
 	west
 )
 
+var mutex sync.Mutex
+
 // Calculate the travel in North-South direction. Returns true if the route exist the grid.
 // Otherwise false
 func (route *guardRoute) travelNorthSouth(labMap map[input.Coordinates]bool,
 	loopDetection bool) (int64, *guardRoute) {
 	previousPosition := route.position
+
 	for y := route.position.Y; y < route.mapSize.Y; {
 		if y < 0 {
 			break
@@ -226,7 +230,6 @@ func (route *guardRoute) guardNavigation(blockMap map[input.Coordinates]bool, lo
 		route.direction = allDirections[i]
 		exitFound, route = route.travel(blockMap, loopDetection)
 		if exitFound == 1 {
-			// fmt.Printf("The guard will exit here %v\n", route.position)
 			return 0
 		}
 		if exitFound == 2 {
@@ -252,10 +255,45 @@ type guardRoute struct {
 	direction Direction
 }
 
+func afterAddingNewBlock(wg *sync.WaitGroup, total *int, startingPoint input.Coordinates,
+	blockCoordinates map[input.Coordinates]bool, currentAddition string,
+	mapSize input.Coordinates) {
+	var currenRoute guardRoute
+	tryBlock := convertToCoordinate(currentAddition)
+
+	currenRoute.trail = make(map[string]bool)
+	currenRoute.position = startingPoint
+	currenRoute.direction = north
+	currenRoute.mapSize = mapSize
+
+	// fmt.Printf("blockCoordinates %p\n", &blockCoordinates)
+	improvedBlock := make(map[input.Coordinates]bool)
+
+	for coordinate, v := range blockCoordinates {
+		if v {
+			improvedBlock[coordinate] = true
+		}
+	}
+
+	improvedBlock[tryBlock] = true
+	res := currenRoute.guardNavigation(improvedBlock, true)
+
+	if res == 1 {
+		// print(res)
+		mutex.Lock()
+		defer mutex.Unlock()
+		*total++
+	}
+
+	wg.Done()
+
+}
+
 func CalculateRoute() {
+	var wg sync.WaitGroup
 	var route guardRoute
-	inputLines := input.GetInputV2("./day_06/test-input-1.txt")
-	// inputLines := input.GetInputV2("../downloads/input-day6.txt")
+	// inputLines := input.GetInputV2("./day_06/test-input-1.txt")
+	inputLines := input.GetInputV2("../downloads/input-day6.txt")
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
 
@@ -290,14 +328,13 @@ func CalculateRoute() {
 			route.direction = north
 
 			improvedMap := blockMap
-			tryBlock := convertToCoordinate(coordinate)
-			improvedMap[tryBlock] = true
-			res := route.guardNavigation(improvedMap, true)
-			// fmt.Printf("res: %v\n", res)
-			total = total + res
-			delete(improvedMap, tryBlock)
+			wg.Add(1)
+			go afterAddingNewBlock(&wg, &total, startingPoint[0], improvedMap, coordinate,
+				input.GetGridSize(inputLines))
 		}
 	}
+
+	wg.Wait()
 
 	fmt.Printf("The number of possible loops is: %v\n", total)
 }
