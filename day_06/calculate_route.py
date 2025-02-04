@@ -79,14 +79,15 @@ class GuardRoute:
                 break
 
             self.position.Y = y
+            current_pos = self.position.get_str()
 
-            if lab_map.get((self.position.X, self.position.Y), False):
+            if current_pos in lab_map:
                 self.position = previous_position
                 return 0, self
 
             if loop_detection:
                 trail_point = self.position.get_str_w_directions(self.direction)
-                if self.trail.get(trail_point):
+                if trail_point in self.trail:
                     return 2, self
             else:
                 trail_point = self.position.get_str()
@@ -113,14 +114,15 @@ class GuardRoute:
                 break
 
             self.position.X = x
+            current_pos = self.position.get_str()
 
-            if lab_map.get((self.position.X, self.position.Y), False):
+            if current_pos in lab_map:
                 self.position = previous_position
                 return 0, self
 
             if loop_detection:
                 trail_point = self.position.get_str_w_directions(self.direction)
-                if self.trail.get(trail_point):
+                if trail_point in self.trail:
                     return 2, self
             else:
                 trail_point = self.position.get_str()
@@ -148,7 +150,7 @@ class GuardRoute:
 
     def guard_navigation(self, block_map, loop_detection):
         exit_found = 0
-        kill_switch = 1200
+        kill_switch = 7200
         i = j = 0
         all_directions = ["north", "east", "south", "west"]
 
@@ -170,9 +172,13 @@ class GuardRoute:
 def main():
     print("Hello")
 
-    input = get_input("./day_06/test-input-1.txt")
+    # input = get_input("./day_06/test-input-1.txt")
+    input = get_input("../downloads/input-day6.txt")
     block_coordinates = get_coordinates(input, "#")
-    starting_point = get_coordinates(input, "^")
+    guards = get_coordinates(input, "^")
+    starting_point = Coordinates(guards[0].X, guards[0].Y)
+    print(starting_point.get_str())
+    print(f"{starting_point.X}-{starting_point.Y}")
     map_size = get_grid_size(input)
 
     block_map = {}
@@ -180,8 +186,37 @@ def main():
         block_str = block.get_str()
         block_map[block_str] = True
 
-    route = GuardRoute(map_size=map_size, position=starting_point[0], direction="north")
+    route = GuardRoute(map_size=map_size, position=starting_point, direction="north")
     route.guard_navigation(block_map, False)
+
+    print(f"lenght {len(route.trail)}")
+
+    total = 0
+    guards = get_coordinates(input, "^")
+    starting_point = Coordinates(guards[0].X, guards[0].Y)
+    start_coord = starting_point.get_str()
+    route.trail[start_coord] = False
+    original_route = route.trail
+
+    print(starting_point.get_str())
+
+    for point in original_route.keys():
+        guards = get_coordinates(input, "^")
+        starting_point = Coordinates(guards[0].X, guards[0].Y)
+        if point == start_coord:
+            continue
+        if original_route[point]:
+            this_route = GuardRoute(map_size=map_size, position=starting_point, direction="north")
+
+            improved_map = block_map
+            improved_map[point] = True
+
+            route_status = this_route.guard_navigation(improved_map, True)
+            total += route_status
+            del improved_map[point]
+
+    print(f"The number of possible loops is: {total}\n" )
+
     return 0
 
 
