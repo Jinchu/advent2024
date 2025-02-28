@@ -1,14 +1,14 @@
 package main
 
 import (
-	"advent/day_06"
+	"advent/day_07"
 	"fmt"
 )
 
 func main() {
-	fmt.Println("Running")
+	fmt.Println("Running 7")
 
 	// day_04.SearchForChristmas()
-	day06.CalculateRoute()
 
+	day07.GetTotalCalibration()
 }
