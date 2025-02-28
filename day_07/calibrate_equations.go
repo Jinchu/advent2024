@@ -30,15 +30,28 @@ func getTestResultCalibrationNumbers(cLine string) (int, []int) {
 	return testResult, calibrationNumbers
 }
 
+func concatTwoIntegersAsStr(left int, right int) int {
+	leftStr := strconv.Itoa(left)
+	rightStr := strconv.Itoa(right)
+	totalStr := leftStr + rightStr
+
+	totalInt, _ := strconv.Atoi(totalStr)
+
+	// fmt.Printf("%v || %v - %v\n", left, right, totalInt)
+	return totalInt
+}
+
 func calculateNextNumbers(cumulativeLeft []int, right int) []int {
 	var possibilities []int
 
 	for _, left := range cumulativeLeft {
 		sum := left + right
 		product := left * right
+		concat := concatTwoIntegersAsStr(left, right)
 
 		possibilities = append(possibilities, sum)
 		possibilities = append(possibilities, product)
+		possibilities = append(possibilities, concat)
 	}
 
 	return possibilities
