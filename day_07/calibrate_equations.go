@@ -30,20 +30,61 @@ func getTestResultCalibrationNumbers(cLine string) (int, []int) {
 	return testResult, calibrationNumbers
 }
 
+func calculateNextNumbers(cumulativeLeft []int, right int) []int {
+	var possibilities []int
+
+	for _, left := range cumulativeLeft {
+		sum := left + right
+		product := left * right
+
+		possibilities = append(possibilities, sum)
+		possibilities = append(possibilities, product)
+	}
+
+	return possibilities
+}
+
+func getPossibleCalibrationResults(calibrationNumbers []int) []int {
+	var cumulativeLeft []int
+
+	for i, currentNum := range calibrationNumbers {
+		if i == 0 {
+			cumulativeLeft = append(cumulativeLeft, currentNum)
+			continue
+		}
+
+		cumulativeLeft = calculateNextNumbers(cumulativeLeft, currentNum)
+
+	}
+	return cumulativeLeft
+
+}
+
 /* getLineCalibrationValue return the line specific calibration value. Returns 0 for invalid lines.
  */
 func getLineCalibrationValue(cLine string) int {
 	total := 0
 
 	testResult, calibrationNumbers := getTestResultCalibrationNumbers(cLine)
-	fmt.Println(calibrationNumbers)
 
-	fmt.Printf("Trying to get the total of %v: %v\n", testResult, total)
+	// test operations
+	possibleResults := getPossibleCalibrationResults(calibrationNumbers)
+	// fmt.Println(possibleResults)
+
+	for _, possible := range possibleResults {
+		if possible == testResult {
+			total = testResult
+		}
+	}
+
+	// fmt.Printf("line total: %v\n", total)
+
 	return total
 }
 
 func GetTotalCalibration() {
-	inputLines := input.GetInputV2("./day_07/test-input-1.txt")
+	// inputLines := input.GetInputV2("./day_07/test-input-1.txt")
+	inputLines := input.GetInputV2("../downloads/input-day7.txt")
 	total := 0
 
 	for _, line := range inputLines {

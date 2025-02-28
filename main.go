@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Running 7")
+	fmt.Println("Running")
 
 	// day_04.SearchForChristmas()
 
