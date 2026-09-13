@@ -293,7 +293,7 @@ func CalculateRoute() {
 	var wg sync.WaitGroup
 	var route guardRoute
 	// inputLines := input.GetInputV2("./day_06/test-input-1.txt")
-	inputLines := input.GetInputV2("../downloads/input-day6.txt")
+	inputLines := input.GetInputV2("../downloads/input-day6-mega2.txt")
 	blockCoordinates := input.GetCoordinates(inputLines, "#")
 	startingPoint := input.GetCoordinates(inputLines, "^")
 
